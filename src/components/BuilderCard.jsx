@@ -1,157 +1,88 @@
-function BuilderCard({
-  image,
-  imageSettings,
-  data,
-  cardRef,
-}) {
+import { forwardRef } from "react";
+
+import template from "../assets/idCardTemplate.png";
+
+import CardHeader from "./CardHeader";
+import CardPhoto from "./CardPhoto";
+import CardDetails from "./CardDetails";
+import CardFooter from "./CardFooter";
+import StickerLayer from "./StickerLayer";
+import QRCodeGenerator from "./QRCodeGenerator";
+
+import { generateQRValue } from "../utils/generateQR";
+
+const BuilderCard = forwardRef(function BuilderCard(
+  { data },
+  ref
+) {
+  const qrValue = generateQRValue(
+    data.instagram
+  );
+
   return (
     <div
-      ref={cardRef}
+      ref={ref}
       className="builder-card"
     >
-      <div className="card-sun" />
 
-      <div className="card-leaf leaf-one">
-        ✦
-      </div>
+      {/* =================================================
+          THE ONE AND ONLY COMPLETE CARD TEMPLATE
+          ================================================= */}
 
-      <div className="card-leaf leaf-two">
-        ✦
-      </div>
+      <img
+        src={template}
+        alt=""
+        className="id-card-template"
+        draggable="false"
+      />
 
-      <header className="card-header">
-        <div className="card-brand">
-          <div className="hh-mark">
-            HH
-          </div>
+      {/* =================================================
+          DECORATIVE STICKERS
+          ================================================= */}
 
-          <div>
-            <strong>
-              HACKER HOUSE
-            </strong>
+      <StickerLayer />
 
-            <span>
-              GOA · 2026
-            </span>
-          </div>
-        </div>
+      {/* =================================================
+          DYNAMIC PHOTO
+          ================================================= */}
 
-        <div className="card-code">
-          <span>BUILDER ID</span>
-          <strong>#FRAMEINGOA</strong>
-        </div>
-      </header>
+      <CardPhoto
+        photo={data.photo}
+      />
 
-      <main className="card-main">
-        <div className="card-photo">
-          {image ? (
-            <img
-              src={image}
-              alt="Builder"
-              draggable="false"
-              style={{
-                transform: `
-                  translate(
-                    ${imageSettings.positionX}px,
-                    ${imageSettings.positionY}px
-                  )
-                  scale(${imageSettings.scale})
-                `,
-              }}
-            />
-          ) : (
-            <div className="photo-placeholder">
-              <strong>
-                YOUR PHOTO
-              </strong>
+      {/* =================================================
+          DYNAMIC INFORMATION
+          ================================================= */}
 
-              <span>
-                UPLOAD TO BEGIN
-              </span>
-            </div>
-          )}
+      <CardHeader
+        builderId={data.builderId}
+      />
 
-          <span className="photo-label">
-            GOA / 2026
-          </span>
-        </div>
+      <CardDetails
+        name={data.name}
+        builderId={data.builderId}
+        builderClass={data.builderClass}
+        instagram={data.instagram}
+      />
 
-        <div className="card-information">
-          <span className="identity-label">
-            BUILDER IDENTITY
-          </span>
+      {/* =================================================
+          QR
+          ================================================= */}
 
-          <h1>
-            {data.name ||
-              "YOUR NAME"}
-          </h1>
+      <QRCodeGenerator
+        value={qrValue}
+      />
 
-          <div className="role">
-            {data.role}
-          </div>
+      {/* =================================================
+          BUILDER ID / BARCODE
+          ================================================= */}
 
-          <div className="card-rule" />
+      <CardFooter
+        builderId={data.builderId}
+      />
 
-          <div className="info-row">
-            <div>
-              <span>STACK</span>
-              <strong>
-                {data.stack ||
-                  "YOUR STACK"}
-              </strong>
-            </div>
-
-            <div>
-              <span>BUILDER CLASS</span>
-              <strong>
-                {data.title}
-              </strong>
-            </div>
-          </div>
-
-          <div className="card-message">
-            <strong>
-              BUILD.
-            </strong>
-
-            <strong>
-              SHIP.
-            </strong>
-
-            <strong>
-              REPEAT.
-            </strong>
-
-            <small>
-              MADE IN THE GOA SUN.
-            </small>
-          </div>
-        </div>
-      </main>
-
-      <footer className="card-footer">
-        <div>
-          <span>
-            GOA, INDIA
-          </span>
-
-          <strong>
-            28 — 31 OCT 2026
-          </strong>
-        </div>
-
-        <div className="footer-hh">
-          HH
-        </div>
-      </footer>
-
-      <div className="card-color-strip">
-        <span />
-        <span />
-        <span />
-      </div>
     </div>
   );
-}
+});
 
 export default BuilderCard;

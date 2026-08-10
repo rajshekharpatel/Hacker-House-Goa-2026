@@ -1,145 +1,207 @@
+import {
+  Instagram,
+  RefreshCcw,
+  Upload,
+  UserRound,
+} from "lucide-react";
+
 function BuilderForm({
   data,
-  setData,
+  updateField,
+  setPhoto,
+  reset,
 }) {
-  const update = (field, value) => {
-    setData((previous) => ({
-      ...previous,
-      [field]: value,
-    }));
+  const handlePhotoUpload = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please select a valid image.");
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      alert("Please choose an image smaller than 8MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      setPhoto(reader.result);
+    };
+
+    reader.readAsDataURL(file);
+
+    event.target.value = "";
   };
 
   return (
-    <div className="builder-form">
-      <div className="section-heading">
-        <span>01 / IDENTITY</span>
+    <aside className="builder-form">
 
-        <h2>
-          TELL US WHO'S BUILDING.
-        </h2>
+      <div className="form-heading">
+        <div>
+          <span className="section-number">
+            01 / IDENTITY
+          </span>
 
-        <p>
-          Add your builder details.
-          Keep it simple.
-        </p>
+          <h2>
+            Build your card
+          </h2>
+        </div>
+
+        <button
+          type="button"
+          className="reset-button"
+          onClick={reset}
+          title="Reset"
+        >
+          <RefreshCcw size={16} />
+        </button>
       </div>
 
-      <div className="form-grid">
-        <label className="field full">
-          <span>YOUR NAME</span>
+      <div className="fields">
+
+        <div className="field">
+          <label htmlFor="name">
+            Builder name
+          </label>
+
+          <div className="input-container">
+            <UserRound size={16} />
+
+            <input
+              id="name"
+              type="text"
+              value={data.name}
+              maxLength={26}
+              placeholder="YOUR NAME"
+              onChange={(event) =>
+                updateField(
+                  "name",
+                  event.target.value.toUpperCase()
+                )
+              }
+            />
+          </div>
+        </div>
+
+        <div className="field">
+          <label htmlFor="builderId">
+            Builder ID
+          </label>
 
           <input
+            id="builderId"
             type="text"
-            value={data.name}
-            placeholder="Raj Shekhar Patel"
-            maxLength={30}
+            value={data.builderId}
+            maxLength={20}
+            placeholder="HHG-2026-001"
             onChange={(event) =>
-              update(
-                "name",
-                event.target.value
+              updateField(
+                "builderId",
+                event.target.value.toUpperCase()
               )
             }
           />
-        </label>
+        </div>
 
-        <label className="field">
-          <span>ROLE</span>
-
-          <select
-            value={data.role}
-            onChange={(event) =>
-              update(
-                "role",
-                event.target.value
-              )
-            }
-          >
-            <option>
-              FULL STACK DEVELOPER
-            </option>
-
-            <option>
-              FRONTEND DEVELOPER
-            </option>
-
-            <option>
-              BACKEND DEVELOPER
-            </option>
-
-            <option>
-              SOFTWARE ENGINEER
-            </option>
-
-            <option>
-              UI / UX DESIGNER
-            </option>
-
-            <option>
-              PRODUCT BUILDER
-            </option>
-          </select>
-        </label>
-
-        <label className="field">
-          <span>STACK</span>
+        <div className="field">
+          <label htmlFor="builderClass">
+            Builder class
+          </label>
 
           <input
+            id="builderClass"
             type="text"
-            value={data.stack}
-            placeholder="React · Node · MongoDB"
-            maxLength={35}
+            value={data.builderClass}
+            maxLength={24}
+            placeholder="TERMINAL WIZARD"
             onChange={(event) =>
-              update(
-                "stack",
-                event.target.value
+              updateField(
+                "builderClass",
+                event.target.value.toUpperCase()
               )
             }
           />
-        </label>
+        </div>
 
-        <label className="field full">
-          <span>BUILDER CLASS</span>
+        <div className="field">
+          <label htmlFor="instagram">
+            Instagram
+          </label>
 
-          <select
-            value={data.title}
-            onChange={(event) =>
-              update(
-                "title",
-                event.target.value
-              )
-            }
-          >
-            <option>
-              THE PRODUCT BUILDER
-            </option>
+          <div className="input-container">
+            <Instagram size={16} />
 
-            <option>
-              THE SHIPPER
-            </option>
+            <input
+              id="instagram"
+              type="text"
+              value={data.instagram}
+              maxLength={32}
+              placeholder="@username"
+              onChange={(event) =>
+                updateField(
+                  "instagram",
+                  event.target.value
+                )
+              }
+            />
+          </div>
+        </div>
 
-            <option>
-              THE SYSTEM THINKER
-            </option>
-
-            <option>
-              THE CODE CRAFTER
-            </option>
-
-            <option>
-              THE PIXEL ARCHITECT
-            </option>
-
-            <option>
-              THE FULL STACK WIZARD
-            </option>
-
-            <option>
-              THE PROBLEM SOLVER
-            </option>
-          </select>
-        </label>
       </div>
-    </div>
+
+      <div className="photo-upload">
+
+        <div className="photo-upload-content">
+
+          <span className="section-number">
+            02 / PORTRAIT
+          </span>
+
+          <strong>
+            Add your photo
+          </strong>
+
+          <small>
+            PNG / JPG / WEBP · max 8MB
+          </small>
+
+        </div>
+
+        <label className="upload-button">
+
+          <Upload size={16} />
+
+          {data.photo
+            ? "CHANGE"
+            : "UPLOAD"}
+
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={handlePhotoUpload}
+          />
+
+        </label>
+
+      </div>
+
+      <div className="form-note">
+        <Instagram size={15} />
+
+        <span>
+          Instagram is used for the card QR code.
+          GitHub and portfolio fields are intentionally
+          removed.
+        </span>
+      </div>
+
+    </aside>
   );
 }
 
