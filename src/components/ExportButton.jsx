@@ -1,3 +1,6 @@
+import { useRef } from "react";
+import { toPng } from "html-to-image";
+
 import {
   ArrowDownToLine,
   Share2,
