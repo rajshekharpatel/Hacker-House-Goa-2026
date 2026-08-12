@@ -1,6 +1,3 @@
-import { useRef } from "react";
-import { toPng } from "html-to-image";
-
 import {
   ArrowDownToLine,
   Share2,
@@ -8,7 +5,6 @@ import {
 } from "lucide-react";
 
 import {
-  createCardDataUrl,
   exportCardAsPNG,
 } from "../utils/exportCard";
 
@@ -36,49 +32,84 @@ function ExportButton({ cardRef, data }) {
         createFileName(data.name)
       );
     } catch (error) {
-      console.error(error);
+      console.error("Download failed:", error);
 
       alert(
-        "Unable to export the card. Please try again."
+        "Unable to download the ID card. Please try again."
       );
     }
   };
 
-  const handleXShare = () => {
-    const name =
-      data.name?.trim() || "a builder";
-
-    const role =
-      data.builderClass?.trim() ||
-      "BUILDER";
-
-    const text =
-      `I just created my Hacker House Goa 2026 Builder Card 🚀\n\n` +
-      `${name} · ${role}\n\n` +
-      `#HHGoa2026 #HackerHouseGoa #BuildShipRepeat`;
-
-    const url =
-      `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-        text
-      )}`;
-
-    window.open(
-      url,
-      "_blank",
-      "noopener,noreferrer,width=760,height=620"
-    );
-  };
-
-  const handleNativeShare = async () => {
+  const handleXShare = async () => {
     if (!cardRef.current) {
+      alert("Card preview is not ready.");
       return;
     }
 
     try {
+      /*
+       * STEP 1
+       * Generate and download the actual ID card.
+       */
+      await exportCardAsPNG(
+        cardRef.current,
+        createFileName(data.name)
+      );
+
+      /*
+       * STEP 2
+       * Create X post text.
+       */
+      const name =
+        data.name?.trim() || "Builder";
+
+      const role =
+        data.builderClass?.trim() || "BUILDER";
+
+      const text =
+        `I just created my Hacker House Goa 2026 Builder Card 🚀\n\n` +
+        `${name} · ${role}\n\n` +
+        `#HHGoa2026 #HackerHouseGoa #BuildShipRepeat`;
+
+      /*
+       * STEP 3
+       * Open X compose.
+       */
+      const xUrl =
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+          text
+        )}`;
+
+      window.open(
+        xUrl,
+        "_blank",
+        "noopener,noreferrer,width=760,height=620"
+      );
+
+    } catch (error) {
+      console.error("X sharing failed:", error);
+
+      alert(
+        "Unable to prepare the card for X."
+      );
+    }
+  };
+
+  const handleShare = async () => {
+    if (!cardRef.current) {
+      alert("Card preview is not ready.");
+      return;
+    }
+
+    try {
+      /*
+       * Create the PNG.
+       */
       const dataUrl =
-        await createCardDataUrl(
-          cardRef.current
-        );
+        await import("../utils/exportCard")
+          .then((module) =>
+            module.createCardDataUrl(cardRef.current)
+          );
 
       const response =
         await fetch(dataUrl);
@@ -94,6 +125,10 @@ function ExportButton({ cardRef, data }) {
         }
       );
 
+      /*
+       * If browser supports native file sharing,
+       * open its share sheet.
+       */
       if (
         navigator.share &&
         navigator.canShare &&
@@ -103,7 +138,7 @@ function ExportButton({ cardRef, data }) {
       ) {
         await navigator.share({
           title:
-            "Hacker House Goa 2026 Builder Card",
+            "HH Goa 2026 Builder Card",
 
           text:
             "My Hacker House Goa 2026 Builder Card 🚀",
@@ -114,12 +149,39 @@ function ExportButton({ cardRef, data }) {
         return;
       }
 
-      handleXShare();
+      /*
+       * Otherwise download the card.
+       */
+      await exportCardAsPNG(
+        cardRef.current,
+        createFileName(data.name)
+      );
+
+      alert(
+        "Your card has been downloaded. You can now share the PNG."
+      );
 
     } catch (error) {
-      if (error?.name !== "AbortError") {
-        console.error(error);
-        handleXShare();
+      if (error?.name === "AbortError") {
+        return;
+      }
+
+      console.error(
+        "Share failed:",
+        error
+      );
+
+      alert(
+        "Sharing isn't supported by this browser. The card will be downloaded instead."
+      );
+
+      try {
+        await exportCardAsPNG(
+          cardRef.current,
+          createFileName(data.name)
+        );
+      } catch (downloadError) {
+        console.error(downloadError);
       }
     }
   };
@@ -133,6 +195,7 @@ function ExportButton({ cardRef, data }) {
         onClick={handleDownload}
       >
         <ArrowDownToLine size={18} />
+
         DOWNLOAD ID CARD
       </button>
 
@@ -142,15 +205,17 @@ function ExportButton({ cardRef, data }) {
         onClick={handleXShare}
       >
         <X size={18} />
-        SHARE ON X / TWITTER
+
+        DOWNLOAD & SHARE ON X
       </button>
 
       <button
         type="button"
         className="native-share-button"
-        onClick={handleNativeShare}
+        onClick={handleShare}
       >
         <Share2 size={17} />
+
         SHARE CARD
       </button>
 
